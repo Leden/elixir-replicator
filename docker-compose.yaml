@@ -1,0 +1,88 @@
+version: '2'
+
+services:
+  replicator:
+    container_name: replicator
+    build: .
+#    dockerfile: Dockerfile # That's our Dockerfile path
+    command: "bash -c 'iex -S mix'" # Start the server if no other command is specified
+  #  environment:
+    dns:
+      - 10.128.0.101
+      - 10.128.0.102
+#    ports:
+#      - "8888:8888"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./src:/app
+    links:
+#      - mariadb
+      - postgres
+#      - rabbitmq
+#      - zoo1
+#      - zoo2
+#      - zoo3
+#    environment:
+#      - ER_HTTP_PORT=4000
+#      - ER_CORE_EMITTERREGISTRY_CORE_REPO_DATABASE=wger
+#      - ER_CORE_EMITTERREGISTRY_CORE_REPO_USERNAME=wger
+#      - ER_CORE_EMITTERREGISTRY_CORE_REPO_PASSWORD=wger
+#      - ER_CORE_EMITTERREGISTRY_CORE_REPO_HOSTNAME=postgres
+
+
+#  mariadb:
+#    image: 'bitnami/mariadb:latest'
+#    ports:
+#      - '3306:3306'
+#    environment:
+#      - ALLOW_EMPTY_PASSWORD=yes
+#      - MARIADB_DATABASE=wger
+#      - MARIADB_USER=wger
+#      - MARIADB_PASSWORD=wger
+
+  postgres:
+    image: postgres:9.6-alpine
+#    ports:
+#      - '5432:5432'
+    environment:
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_USER=user
+      - POSTGRES_DB=replicator_repo
+
+#  rabbitmq:
+#    image: 'rabbitmq:alpine'
+#    ports:
+#      - "15672:15672"
+#      - "5672:5672"
+#
+#    environment:
+#      - RABBITMQ_DEFAULT_USER=wger
+#      - RABBITMQ_DEFAULT_PASS=wger
+#      - RABBITMQ_DEFAULT_VHOST=/wger
+#
+#  zoo1:
+#    image: zookeeper
+#    restart: always
+#    ports:
+#      - 2181:2181
+#    environment:
+#      ZOO_MY_ID: 1
+#      ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+#
+#  zoo2:
+#    image: zookeeper
+#    restart: always
+#    ports:
+#      - 2182:2181
+#    environment:
+#      ZOO_MY_ID: 2
+#      ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+#
+#  zoo3:
+#    image: zookeeper
+#    restart: always
+#    ports:
+#      - 2183:2181
+#    environment:
+#      ZOO_MY_ID: 3
+#      ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:38881:2181"
