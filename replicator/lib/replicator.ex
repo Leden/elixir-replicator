@@ -6,6 +6,8 @@ defmodule Replicator do
   alias Replicator.RepLog
   alias Replicator.Repo
 
+  import Ecto.Query
+
   @doc """
   TODO
   """
@@ -40,6 +42,17 @@ defmodule Replicator do
       previous: dehydrate(schema),
       current: nil,
     })
+  end
+
+  @doc """
+  TODO
+  """
+  def get_replog(last_id) do
+    Repo.all(
+      from r in RepLog,
+      order_by: r.id,
+      where: fragment("? BETWEEN ? AND ? + 1000", r.id, ^last_id, ^last_id)
+    )
   end
 
   defp insert_replog(params) do

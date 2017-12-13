@@ -2,9 +2,22 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
+
+config :example_project, ExampleProject.Repo,
+       adapter: Ecto.Adapters.Postgres,
+       database: "example_project_repo",
+       username: "user",
+       password: "pass",
+       hostname: "postgres"
+
+
+config :example_project,
+       ecto_repos: [ExampleProject.Repo]
+
+
 config :replicator, Replicator.Repo,
        adapter: Ecto.Adapters.Postgres,
-       database: "example_client",
+       database: "example_project_repo",
        username: "user",
        password: "pass",
        hostname: "postgres"
@@ -17,11 +30,11 @@ config :replicator, Replicator.Repo,
 
 # You can configure your application as:
 #
-#     config :example_client, key: :value
+#     config :example_project, key: :value
 #
 # and access this configuration in your application as:
 #
-#     Application.get_env(:example_client, :key)
+#     Application.get_env(:example_project, :key)
 #
 # You can also configure a 3rd-party app:
 #
