@@ -1,9 +1,9 @@
-defmodule Exampleproject.Mixfile do
+defmodule ExampleServer.Mixfile do
   use Mix.Project
 
   def project do
     [
-      app: :exampleproject,
+      app: :example_server,
       version: "0.1.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,
@@ -14,7 +14,8 @@ defmodule Exampleproject.Mixfile do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {ExampleServer.Application, []}
     ]
   end
 

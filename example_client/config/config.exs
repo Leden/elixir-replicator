@@ -4,7 +4,7 @@ use Mix.Config
 
 config :replicator, Replicator.Repo,
        adapter: Ecto.Adapters.Postgres,
-       database: "replicator_repo",
+       database: "example_client",
        username: "user",
        password: "pass",
        hostname: "postgres"
@@ -17,11 +17,11 @@ config :replicator, Replicator.Repo,
 
 # You can configure your application as:
 #
-#     config :exampleproject, key: :value
+#     config :example_client, key: :value
 #
 # and access this configuration in your application as:
 #
-#     Application.get_env(:exampleproject, :key)
+#     Application.get_env(:example_client, :key)
 #
 # You can also configure a 3rd-party app:
 #

@@ -1,6 +1,6 @@
-defmodule Exampleproject do
+defmodule ExampleClient do
   @moduledoc """
-  Documentation for Exampleproject.
+  Documentation for ExampleClient.
   """
 
   @doc """
@@ -8,7 +8,7 @@ defmodule Exampleproject do
 
   ## Examples
 
-      iex> Exampleproject.hello
+      iex> ExampleClient.hello
       :world
 
   """
