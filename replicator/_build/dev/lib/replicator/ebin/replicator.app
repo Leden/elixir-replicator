@@ -1,0 +1,10 @@
+{application,replicator,
+             [{applications,[kernel,stdlib,elixir,logger,ecto]},
+              {description,"replicator"},
+              {modules,['Elixir.Replicator','Elixir.Replicator.Application',
+                        'Elixir.Replicator.LastAppliedRepLog',
+                        'Elixir.Replicator.RepLog','Elixir.Replicator.Repo']},
+              {registered,[]},
+              {vsn,"0.1.0"},
+              {extra_applications,[logger]},
+              {mod,{'Elixir.Replicator.Application',[]}}]}.
