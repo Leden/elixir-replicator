@@ -3,7 +3,7 @@ defmodule Replicator.RepLog do
   import Ecto.Changeset
 
   schema "replicator_replog" do
-    field :entity, :string
+    field :schema, :string
     field :operation, :string
     field :previous, :map
     field :current, :map
@@ -12,7 +12,7 @@ defmodule Replicator.RepLog do
 
   def changeset(replog, params \\ %{}) do
     replog
-    |> cast(params, [:id, :entity, :operation, :previous, :current])
-    |> validate_required([:entity, :operation])
+    |> cast(params, [:id, :schema, :operation, :previous, :current])
+    |> validate_required([:schema, :operation])
   end
 end

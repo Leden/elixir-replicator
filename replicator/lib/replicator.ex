@@ -9,35 +9,35 @@ defmodule Replicator do
   @doc """
   TODO
   """
-  def log_insert(%mod{} = entity) do
+  def log_insert(%module{} = schema) do
     insert_replog(%{
-      entity: mod.__schema__(:source),
+      schema: Atom.to_string(module),
       operation: "insert",
       previous: nil,
-      current: entity |> dehydrate(),
+      current: dehydrate(schema),
     })
   end
 
   @doc """
   TODO
   """
-  def log_update(%mod{} = previous_entity, %mod{} = current_entity) do
+  def log_update(%module{} = previous_schema, %module{} = current_schema) do
     insert_replog(%{
-      entity: mod.__schema__(:source),
+      schema: Atom.to_string(module),
       operation: "update",
-      previous: previous_entity |> dehydrate(),
-      current: current_entity |> dehydrate(),
+      previous: dehydrate(previous_schema),
+      current: dehydrate(current_schema),
     })
   end
 
   @doc """
   TODO
   """
-  def log_delete(%mod{} = entity) do
+  def log_delete(%module{} = schema) do
     insert_replog(%{
-      entity: mod.__schema__(:source),
+      schema: Atom.to_string(module),
       operation: "delete",
-      previous: entity |> dehydrate(),
+      previous: dehydrate(schema),
       current: nil,
     })
   end
@@ -48,9 +48,9 @@ defmodule Replicator do
     |> Repo.insert!()
   end
 
-  defp dehydrate(%mod{} = entity) do
-    entity
+  defp dehydrate(%module{} = schema) do
+    schema
     |> Map.from_struct()
-    |> Map.take(mod.__schema__(:fields))
+    |> Map.take(module.__schema__(:fields))
   end
 end
