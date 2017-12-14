@@ -9,15 +9,17 @@ defmodule Replicator.Client do
   alias Replicator.RepLog
   alias Replicator.Repo
 
-  def start_link do
-    GenServer.start_link(__MODULE__, %{})
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, opts)
   end
 
-  def init do
+  def init(opts) do
     state = %{
       upstream_url: Application.get_env(:replicator, :upstream_url),
       sync_interval: Application.get_env(:replicator, :sync_interval),
     }
+
+    Logger.info "Starting Replicator Client: state=#{inspect state} opts=#{inspect opts}"
 
     schedule_next(state)
 
@@ -38,11 +40,16 @@ defmodule Replicator.Client do
     last_id = get_last_id()
     url = prepare_url(upstream_url, last_id)
 
-    case HTTPoison.get!(url) do
-      %{status_code: 200, body: body} -> body |> Poison.decode!() |> save_replogs()
-      %{status_code: status, body: body} ->
+    Logger.info "last_id=#{inspect last_id} url=#{inspect url}"
+
+    case HTTPoison.get(url) do
+      {:ok, %{status_code: 200, body: body}} -> body |> Poison.decode!() |> apply_all_replogs(last_id)
+      {:ok, %{status_code: status, body: body}} ->
         # Something bad happened
         Logger.warn "Sync error while querying center: #{inspect status}, #{inspect body}"
+      {:error, reason} ->
+        # Could not connect at all
+        Logger.warn "Sync error while querying center: #{inspect reason}"
     end
   end
 
@@ -65,12 +72,10 @@ defmodule Replicator.Client do
     |> URI.to_string()
   end
 
-  defp save_replogs([]), do: :ok
-
-  defp save_replogs(replogs) when is_list(replogs) do
+  defp apply_all_replogs(replogs, last_id) do
     Repo.transaction(fn ->
       replogs
-      |> save_replogs(0)
+      |> save_replogs(last_id)
       |> save_last_id()
     end)
   end
@@ -78,42 +83,42 @@ defmodule Replicator.Client do
   defp save_replogs([], last_id), do: last_id
 
   defp save_replogs([replog | tail], last_id) do
-    id = save_replog(replog)
-    save_replogs(tail, Enum.max([id, last_id]))
+    id = case replog do
+      %{id: id} when id > last_id ->
+        replog |> to_ecto_schema(RepLog) |> save_replog()
+        id
+
+      _ -> last_id
+    end
+
+    save_replogs(tail, id)
   end
 
-  defp save_replog(%RepLog{id: id, operation: "insert", schema: schema, current: current}) do
-    schema
-    |> String.to_existing_atom()
-    |> struct(current)
+  defp save_replog(%RepLog{operation: "insert", schema: schema, current: current}) do
+    current
+    |> to_ecto_schema(schema)
     |> Repo.insert!()
-
-    id
   end
 
-  defp save_replog(%RepLog{id: id, operation: "update", schema: schema, current: current, previous: previous}) do
-    schema
-    |> String.to_existing_atom()
-    |> struct(previous)
-    |> schema.changeset(current)
+  defp save_replog(%RepLog{operation: "update", schema: schema, current: current, previous: previous}) do
+    module = schema |> String.to_existing_atom()
+
+    previous
+    |> to_ecto_schema(schema)
+    |> module.changeset(current)
     |> Repo.update!()
-
-    id
   end
 
-  defp save_replog(%RepLog{id: id, operation: "delete", schema: schema, previous: previous}) do
-    schema
-    |> String.to_existing_atom()
-    |> struct(previous)
+  defp save_replog(%RepLog{operation: "delete", schema: schema, previous: previous}) do
+    previous
+    |> to_ecto_schema(schema)
     |> Repo.delete!()
-
-    id
   end
 
   defp save_last_id(id) do
     case Repo.one(LastAppliedRepLog) do
       nil ->
-        %LastAppliedRepLog{last_id: id}
+        %LastAppliedRepLog{id: 1, last_id: id}
         |> Repo.insert!()
 
       replog ->
@@ -123,4 +128,21 @@ defmodule Replicator.Client do
     end
   end
 
+  defp to_ecto_schema(data, schema) when is_binary(schema) do
+    to_ecto_schema(data, String.to_existing_atom(schema))
+  end
+  defp to_ecto_schema(data, schema) when is_atom(schema) do
+    changeset = Ecto.Changeset.cast(struct(schema), data, schema.__schema__(:fields))
+
+    Logger.debug """
+    to_ecto_schema:
+      * data = #{inspect data}
+      * schema = #{inspect schema}
+      * changeset = #{inspect changeset}
+    """
+
+    Enum.reduce schema.__schema__(:fields), struct(schema), fn field, acc ->
+      %{acc | field => Ecto.Changeset.get_field(changeset, field)}
+    end
+  end
 end

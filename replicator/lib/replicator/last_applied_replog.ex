@@ -2,7 +2,6 @@ defmodule Replicator.LastAppliedRepLog do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @primary_key false
   schema "replicator_last_applied_replog" do
     field :last_id, :id
     timestamps()

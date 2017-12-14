@@ -3,21 +3,24 @@
 use Mix.Config
 
 
+config :example_project,
+       ecto_repos: [ExampleProject.Repo]
+
 config :example_project, ExampleProject.Repo,
        adapter: Ecto.Adapters.Postgres,
-       database: "example_project_repo",
+       database: System.get_env("DATABASE") || "example_project_repo",
        username: "user",
        password: "pass",
        hostname: "postgres"
 
 
-config :example_project,
-       ecto_repos: [ExampleProject.Repo]
-
+config :replicator,
+  upstream_url: "http://localhost:5000/replog",
+  sync_interval: 60 * 1000 # 1 minute
 
 config :replicator, Replicator.Repo,
        adapter: Ecto.Adapters.Postgres,
-       database: "example_project_repo",
+       database: System.get_env("DATABASE") || "example_project_repo",
        username: "user",
        password: "pass",
        hostname: "postgres"

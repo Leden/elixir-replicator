@@ -29,6 +29,7 @@ defmodule Replicator.Mixfile do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
       {:ecto, "~> 2.0"},
       {:poison, "~> 3.1"},
+      {:httpoison, "~> 0.13.0"},
     ]
   end
 end
