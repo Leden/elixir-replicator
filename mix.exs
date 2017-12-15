@@ -16,7 +16,6 @@ defmodule Replicator.Mixfile do
     [
       extra_applications: [
         :logger,
-        :ecto,
       ],
       mod: {Replicator.Application, []}
     ]
