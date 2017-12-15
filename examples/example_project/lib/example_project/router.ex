@@ -8,6 +8,9 @@ defmodule ExampleProject.Router do
 
   import Replicator
 
+  ### Replicator sync api handle plug ###
+  plug Replicator.ExporterPlug, path: "/replog"
+
   plug :match
   plug Plug.Logger, log: :debug
   plug Plug.Parsers, parsers: [:json], json_decoder: Poison
@@ -131,19 +134,6 @@ defmodule ExampleProject.Router do
          {:error, changeset} ->
            changeset |> error_messages() |> response(400, conn)
        end
-  end
-
-  ### Replicator sync api handle ###
-
-  get "/replog" do
-    last_id = case conn.params["last_id"] do
-      nil -> 0
-      last_id -> String.to_integer(last_id)
-    end
-
-    get_replog(last_id)
-    |> Enum.map(&to_plain_map/1)
-    |> response(200, conn)
   end
 
   ### Catch-all 404 handler ###
