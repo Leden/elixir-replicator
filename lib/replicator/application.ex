@@ -13,6 +13,11 @@ defmodule Replicator.Application do
       Replicator.Repo,
     ]
 
+    children = case Application.get_env(:replicator, :mode) do
+      :slave -> [ Replicator.Client | children ]
+      _ -> children
+    end
+
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Replicator.Supervisor]

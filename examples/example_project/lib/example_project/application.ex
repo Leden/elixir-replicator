@@ -21,11 +21,6 @@ defmodule ExampleProject.Application do
       ExampleProject.Repo,
     ]
 
-    children = case System.get_env("REPLICATION_MODE") do
-      "slave" -> [ Replicator.Client | children ]
-      _ -> children
-    end
-
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: ExampleProject.Supervisor]

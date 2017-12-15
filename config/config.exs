@@ -10,4 +10,7 @@ config :replicator, Replicator.Repo,
   hostname: "localhost"
 
 config :replicator,
-  ecto_repos: [Replicator.Repo]
+  ecto_repos: [Replicator.Repo],
+  mode: :slave,
+  upstream_url: "http://localhost:5000/replog",
+  sync_interval: 60 * 1000 # 1 minute
