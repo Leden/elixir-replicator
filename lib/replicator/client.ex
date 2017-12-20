@@ -94,7 +94,7 @@ defmodule Replicator.Client do
         id
 
       _ ->
-        Logger.debug "Skipping #{inspect replog} because its id (#{replog.id}) is smaller than #{last_id}"
+        Logger.debug "Skipping #{inspect replog} because its id is smaller than #{last_id}"
         last_id
     end
 
