@@ -55,13 +55,18 @@ defmodule Replicator.Client do
 
   defp get_last_id do
     case Repo.one(LastAppliedRepLog) do
+      %{last_id: last_id} -> last_id
+
       nil ->
         # First sync ever: assume DB was dumped from Center, take latest RepLog ID.
-        # If RepLog is empty, we're in trouble (do not know the current state of DB) and must die on the spot.
-        %{id: last_id} = RepLog |> last(:id) |> Repo.one()
-        last_id
-
-      %{last_id: last_id} -> last_id
+        # If RepLog is empty, we're most likely in dev with empty DB, so let's start from the beginning.
+        RepLog
+        |> last(:id)
+        |> Repo.one()
+        |> case do
+          %{id: last_id} -> last_id
+          nil -> 0
+        end
     end
   end
 
