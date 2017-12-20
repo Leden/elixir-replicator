@@ -18,18 +18,22 @@ defmodule Replicator do
       previous: nil,
       current: dehydrate(schema),
     })
+    schema
   end
 
   @doc """
   TODO
   """
   def log_update(%module{} = previous_schema, %module{} = current_schema) do
-    insert_replog(%{
-      schema: Atom.to_string(module),
-      operation: "update",
-      previous: dehydrate(previous_schema),
-      current: dehydrate(current_schema),
-    })
+    if previous_schema != current_schema do
+      insert_replog(%{
+        schema: Atom.to_string(module),
+        operation: "update",
+        previous: dehydrate(previous_schema),
+        current: dehydrate(current_schema),
+      })
+    end
+    current_schema
   end
 
   @doc """
@@ -42,6 +46,7 @@ defmodule Replicator do
       previous: dehydrate(schema),
       current: nil,
     })
+    schema
   end
 
   @doc """
