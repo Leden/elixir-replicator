@@ -93,7 +93,9 @@ defmodule Replicator.Client do
         replog |> to_ecto_schema(RepLog) |> save_replog()
         id
 
-      _ -> last_id
+      _ ->
+        Logger.debug "Skipping #{inspect replog} because is is smaller than #{last_id}"
+        last_id
     end
 
     save_replogs(tail, id)
