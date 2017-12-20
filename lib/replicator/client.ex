@@ -89,12 +89,12 @@ defmodule Replicator.Client do
 
   defp save_replogs([replog | tail], last_id) do
     id = case replog do
-      %{id: id} when id > last_id ->
+      %{"id" => id} when id > last_id ->
         replog |> to_ecto_schema(RepLog) |> save_replog()
         id
 
       _ ->
-        Logger.debug "Skipping #{inspect replog} because is is smaller than #{last_id}"
+        Logger.debug "Skipping #{inspect replog} because its id (#{replog.id}) is smaller than #{last_id}"
         last_id
     end
 
