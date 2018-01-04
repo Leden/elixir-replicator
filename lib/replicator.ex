@@ -4,9 +4,10 @@ defmodule Replicator do
   """
 
   alias Replicator.RepLog
-  alias Replicator.Repo
 
   import Ecto.Query
+
+  @repo Application.get_env(:replicator, :repo)
 
   @doc """
   TODO
@@ -53,7 +54,7 @@ defmodule Replicator do
   TODO
   """
   def get_replog(last_id) do
-    Repo.all(
+    @repo.all(
       from r in RepLog,
       order_by: r.id,
       where: fragment("? BETWEEN ? AND ? + 1000", r.id, ^last_id, ^last_id)
@@ -63,7 +64,7 @@ defmodule Replicator do
   defp insert_replog(params) do
     %RepLog{}
     |> RepLog.changeset(params)
-    |> Repo.insert!()
+    |> @repo.insert!()
   end
 
   defp dehydrate(%module{} = schema) do
