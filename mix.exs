@@ -27,6 +27,7 @@ defmodule Replicator.Mixfile do
       {:ecto, "~> 2.0"},
       {:poison, "~> 3.1"},
       {:httpoison, "~> 0.13.0"},
+      {:plug, "~> 1.2"},
     ]
   end
 end
