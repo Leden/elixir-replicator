@@ -9,6 +9,8 @@ defmodule Replicator.Client do
   alias Replicator.RepLog
   alias Replicator.Repo
 
+  @callbacks Application.get_env(:replicator, :callbacks, Replicator.DummyCallbacks)
+
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts)
   end
@@ -43,7 +45,12 @@ defmodule Replicator.Client do
     Logger.info "last_id=#{inspect last_id} url=#{inspect url}"
 
     case HTTPoison.get(url) do
-      {:ok, %{status_code: 200, body: body}} -> body |> Poison.decode!() |> apply_all_replogs(last_id)
+      {:ok, %{status_code: 200, body: body}} ->
+        body
+        |> Poison.decode!()
+        |> apply_all_replogs(last_id)
+        |> callback()
+
       {:ok, %{status_code: status, body: body}} ->
         # Something bad happened
         Logger.warn "Sync error while querying center: #{inspect status}, #{inspect body}"
@@ -151,5 +158,9 @@ defmodule Replicator.Client do
     Enum.reduce schema.__schema__(:fields), struct(schema), fn field, acc ->
       %{acc | field => Ecto.Changeset.get_field(changeset, field)}
     end
+  end
+
+  defp callback(%LastAppliedRepLog{} = last_applied_replog) do
+    apply @callbacks, :on_replication_success, [last_applied_replog]
   end
 end

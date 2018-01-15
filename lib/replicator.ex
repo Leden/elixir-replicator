@@ -5,8 +5,7 @@ defmodule Replicator do
 
   alias Replicator.RepLog
 
-  import Ecto.Query
-
+  @callbacks Application.get_env(:replicator, :callbacks, Replicator.DummyCallbacks)
   @repo Application.get_env(:replicator, :repo)
 
   @doc """
@@ -19,6 +18,7 @@ defmodule Replicator do
       previous: nil,
       current: dehydrate(schema),
     })
+    |> callback(:insert)
     schema
   end
 
@@ -33,6 +33,7 @@ defmodule Replicator do
         previous: dehydrate(previous_schema),
         current: dehydrate(current_schema),
       })
+      |> callback(:update)
     end
     current_schema
   end
@@ -47,6 +48,7 @@ defmodule Replicator do
       previous: dehydrate(schema),
       current: nil,
     })
+    |> callback(:delete)
     schema
   end
 
@@ -54,6 +56,8 @@ defmodule Replicator do
   TODO
   """
   def get_replog(last_id) do
+    import Ecto.Query
+
     @repo.all(
       from r in RepLog,
       order_by: r.id,
@@ -71,5 +75,12 @@ defmodule Replicator do
     schema
     |> Map.from_struct()
     |> Map.take(module.__schema__(:fields))
+  end
+
+  defp callback(replog, operation) do
+    fun = String.to_existing_atom("on_" <> Atom.to_string(operation))
+    args = [replog]
+
+    apply @callbacks, fun, args
   end
 end
