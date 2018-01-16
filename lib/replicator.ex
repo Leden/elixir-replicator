@@ -78,9 +78,6 @@ defmodule Replicator do
   end
 
   defp callback(replog, operation) do
-    fun = String.to_existing_atom("on_" <> Atom.to_string(operation))
-    args = [replog]
-
-    apply @callbacks, fun, args
+    apply @callbacks, :"on_#{operation}", [replog]
   end
 end
