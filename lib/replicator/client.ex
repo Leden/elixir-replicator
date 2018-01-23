@@ -115,7 +115,9 @@ defmodule Replicator.Client do
   end
 
   defp save_replog(%RepLog{operation: "update", schema: schema, current: current, previous: previous}) do
-    module = schema |> String.to_existing_atom()
+    module = schema
+             |> get_actual_schema()
+             |> String.to_existing_atom()
 
     previous
     |> to_ecto_schema(schema)
@@ -143,7 +145,10 @@ defmodule Replicator.Client do
   end
 
   defp to_ecto_schema(data, schema) when is_binary(schema) do
-    to_ecto_schema(data, String.to_existing_atom(schema))
+    module = schema
+             |> get_actual_schema()
+             |> String.to_existing_atom()
+    to_ecto_schema(data, module)
   end
   defp to_ecto_schema(data, schema) when is_atom(schema) do
     changeset = Ecto.Changeset.cast(struct(schema), data, schema.__schema__(:fields))
@@ -162,5 +167,10 @@ defmodule Replicator.Client do
 
   defp callback(%LastAppliedRepLog{} = last_applied_replog) do
     apply @callbacks, :on_replication_success, [last_applied_replog]
+  end
+
+  defp get_actual_schema(schema) do
+    Application.get_env(:replicator, :schema_renames)
+    |> Map.get(schema, schema)
   end
 end

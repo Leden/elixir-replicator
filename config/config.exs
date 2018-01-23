@@ -14,4 +14,5 @@ config :replicator,
   repo: Replicator.Repo,
   mode: :slave,
   upstream_url: "http://localhost:5000/replog",
-  sync_interval: 60 * 1000 # 1 minute
+  sync_interval: 60 * 1000, # 1 minute
+  schema_renames: %{}
