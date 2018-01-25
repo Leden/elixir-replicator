@@ -165,9 +165,10 @@ defmodule Replicator.Client do
     end
   end
 
-  defp callback(%LastAppliedRepLog{} = last_applied_replog) do
+  defp callback({:ok, %LastAppliedRepLog{} = last_applied_replog}) do
     apply @callbacks, :on_replication_success, [last_applied_replog]
   end
+  defp callback(_) do :ok end
 
   defp get_actual_schema(schema) do
     Application.get_env(:replicator, :schema_renames)
