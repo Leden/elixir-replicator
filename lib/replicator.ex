@@ -59,11 +59,12 @@ defmodule Replicator do
     import Ecto.Query
 
     batch_size = Application.get_env(:replicator, :batch_size, 1000)
+    next_last_id = last_id + batch_size
 
     @repo.all(
       from r in RepLog,
       order_by: r.id,
-      where: fragment("? BETWEEN ? AND ? + ?", r.id, ^last_id, ^last_id, ^batch_size)
+      where: fragment("? BETWEEN ? AND ?", r.id, ^last_id, ^next_last_id)
     )
   end
 
