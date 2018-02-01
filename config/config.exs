@@ -16,4 +16,6 @@ config :replicator,
   upstream_url: "http://localhost:5000/replog",
   sync_interval: 60 * 1000, # 1 minute
   schema_renames: %{},
-  batch_size: 1000
+  batch_size: 1000,
+  cleanup_interval_ms: 1000 * 60 * 60 * 24, # Run cleanup each day
+  cleanup_keep_s: 60 * 60 * 24 * 30 # Keep replogs for last month

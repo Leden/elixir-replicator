@@ -22,7 +22,10 @@ config :replicator,
          end),
   upstream_url: "http://localhost:5000/replog",
   sync_interval: 60 * 1000, # 1 minute
-  callbacks: ExampleProject.ReplicatorCallbacks
+  callbacks: ExampleProject.ReplicatorCallbacks,
+  cleanup_interval_ms: 1000 * 10,
+  cleanup_keep_s: 60
+
 
 config :replicator, Replicator.Repo,
        adapter: Ecto.Adapters.Postgres,
@@ -30,3 +33,6 @@ config :replicator, Replicator.Repo,
        username: "user",
        password: "pass",
        hostname: "postgres"
+
+config :logger,
+  level: :debug

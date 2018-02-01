@@ -16,4 +16,8 @@ defmodule ExampleProject.ReplicatorCallbacks do
   def on_replication_success(last_applied_replog) do
     Logger.info "REPLICATION success with #{inspect last_applied_replog}"
   end
+
+  def on_cleanup(result) do
+    Logger.info "CLEANUP success with #{inspect result}"
+  end
 end

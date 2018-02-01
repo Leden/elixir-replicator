@@ -5,8 +5,9 @@ defmodule Replicator do
 
   alias Replicator.RepLog
 
-  @callbacks Application.get_env(:replicator, :callbacks, Replicator.DummyCallbacks)
   @repo Application.get_env(:replicator, :repo)
+
+  alias Replicator.Utils
 
   @doc """
   TODO
@@ -81,6 +82,6 @@ defmodule Replicator do
   end
 
   defp callback(replog, operation) do
-    apply @callbacks, :"on_#{operation}", [replog]
+    Utils.run_callback :"on_#{operation}", replog
   end
 end

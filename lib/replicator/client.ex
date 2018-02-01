@@ -7,9 +7,9 @@ defmodule Replicator.Client do
 
   alias Replicator.LastAppliedRepLog
   alias Replicator.RepLog
-  alias Replicator.Repo
+  alias Replicator.Utils
 
-  @callbacks Application.get_env(:replicator, :callbacks, Replicator.DummyCallbacks)
+  @repo Application.get_env(:replicator, :repo)
 
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts)
@@ -61,7 +61,7 @@ defmodule Replicator.Client do
   end
 
   defp get_last_id do
-    case Repo.one(LastAppliedRepLog) do
+    case @repo.one(LastAppliedRepLog) do
       %{last_id: last_id} -> last_id
 
       nil ->
@@ -69,7 +69,7 @@ defmodule Replicator.Client do
         # If RepLog is empty, we're most likely in dev with empty DB, so let's start from the beginning.
         RepLog
         |> last(:id)
-        |> Repo.one()
+        |> @repo.one()
         |> case do
           %{id: last_id} -> last_id
           nil -> 0
@@ -85,7 +85,7 @@ defmodule Replicator.Client do
   end
 
   defp apply_all_replogs(replogs, last_id) do
-    Repo.transaction(fn ->
+    @repo.transaction(fn ->
       replogs
       |> save_replogs(last_id)
       |> save_last_id()
@@ -111,7 +111,7 @@ defmodule Replicator.Client do
   defp save_replog(%RepLog{operation: "insert", schema: schema, current: current}) do
     current
     |> to_ecto_schema(schema)
-    |> Repo.insert!()
+    |> @repo.insert!()
   end
 
   defp save_replog(%RepLog{operation: "update", schema: schema, current: current, previous: previous}) do
@@ -122,25 +122,25 @@ defmodule Replicator.Client do
     previous
     |> to_ecto_schema(schema)
     |> module.changeset(current)
-    |> Repo.update!()
+    |> @repo.update!()
   end
 
   defp save_replog(%RepLog{operation: "delete", schema: schema, previous: previous}) do
     previous
     |> to_ecto_schema(schema)
-    |> Repo.delete!()
+    |> @repo.delete!()
   end
 
   defp save_last_id(id) do
-    case Repo.one(LastAppliedRepLog) do
+    case @repo.one(LastAppliedRepLog) do
       nil ->
         %LastAppliedRepLog{id: 1, last_id: id}
-        |> Repo.insert!()
+        |> @repo.insert!()
 
       replog ->
         replog
         |> LastAppliedRepLog.changeset(%{last_id: id})
-        |> Repo.update!()
+        |> @repo.update!()
     end
   end
 
@@ -166,7 +166,7 @@ defmodule Replicator.Client do
   end
 
   defp callback({:ok, %LastAppliedRepLog{} = last_applied_replog}) do
-    apply @callbacks, :on_replication_success, [last_applied_replog]
+    Utils.run_callback :on_replication_success, last_applied_replog
   end
   defp callback(_) do :ok end
 
