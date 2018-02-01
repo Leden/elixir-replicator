@@ -15,11 +15,17 @@ defmodule Replicator.ExporterPlug do
 
   defp send_replogs(conn) do
     conn = conn |> fetch_query_params()
-    data = prepare_replogs(conn.query_params["last_id"])
+
+    {_, data} = result = prepare_replogs(conn.query_params["last_id"])
+
+    code = case result do
+      {:ok, _} -> 200
+      {:error, _} -> 400
+    end
 
     conn
     |> put_resp_content_type("application/json")
-    |> send_resp(200, data)
+    |> send_resp(code, data |> Poison.encode!())
     |> halt
   end
 
@@ -32,6 +38,9 @@ defmodule Replicator.ExporterPlug do
     |> Enum.map(fn %module{} = replog ->
          replog |> Map.from_struct() |> Map.take(module.__schema__(:fields))
        end)
-    |> Poison.encode!()
+    |> case do
+        [] -> {:error, %{error: "No data at this ID", details: %{last_id: last_id}}}
+        replogs -> {:ok, replogs}
+       end
   end
 end
